@@ -3,6 +3,10 @@ const express = require('express')
 // Passport docs: http://www.passportjs.org/docs/
 const passport = require('passport')
 
+// require multer for file upload
+const multer = require('multer')
+const upload = multer({ storage: multer.memoryStorage() })
+
 // pull in Mongoose model for fileUploads
 const FileUpload = require('../models/file_upload')
 
@@ -60,18 +64,22 @@ router.get('/fileUploads/:id', requireToken, (req, res, next) => {
 
 // CREATE
 // POST /fileUploads
-router.post('/fileUploads', requireToken, (req, res, next) => {
+router.post('/fileUploads', upload.single('upload'), /* requireToken, */ (req, res, next) => {
   // set owner of new fileUpload to be current user
-  req.body.fileUpload.owner = req.user.id
+  // req.body.fileUpload.owner = req.user.id
+  console.log(req.file)
 
-  FileUpload.create(req.body.fileUpload)
-    // respond to succesful `create` with status 201 and JSON of new "fileUpload"
-    .then(fileUpload => {
-      res.status(201).json({ fileUpload: fileUpload.toObject() })
-    })
-    // if an error occurs, pass it off to our error handler
-    // the error handler needs the error message and the `res` object so that it
-    // can send an error message back to the client
+  fileUploadApi(req.file.originalname, req.file.buffer)
+    .then(console.log)
+
+  // FileUpload.create(req.body.fileUpload)
+  //   // respond to succesful `create` with status 201 and JSON of new "fileUpload"
+  //   .then(fileUpload => {
+  //     res.status(201).json({ fileUpload: fileUpload.toObject() })
+  //   })
+    // // if an error occurs, pass it off to our error handler
+    // // the error handler needs the error message and the `res` object so that it
+    // // can send an error message back to the client
     .catch(next)
 })
 
